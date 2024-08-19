@@ -12,19 +12,21 @@ speaker_id = 3
 if not core.is_model_loaded(speaker_id):
     core.load_model(speaker_id)
 
-# 読み上げデータ
-speech_script = "ボイスボックスコアを使って、読み上げのテストなのだ。"
-# 音声バイナリーデータ作成
-wave_bytes = core.tts(speech_script, speaker_id)
+while True:
+    # 読み上げデータ
+    speech_script = input("読んで欲しい文章を入力するのだ：\n")
+    # 音声バイナリーデータ作成
+    wave_bytes = core.tts(speech_script, speaker_id)
 
-# バイナリーデータをバイトストリームとして読み込む
-audio_stream = io.BytesIO(wave_bytes)
-# バイトストリームを再生可能なオブジェクトに変換
-wave_obj = sa.WaveObject.from_wave_file(audio_stream)
+    # バイナリーデータをバイトストリームとして読み込む
+    audio_stream = io.BytesIO(wave_bytes)
+    # バイトストリームを再生可能なオブジェクトに変換
+    wave_obj = sa.WaveObject.from_wave_file(audio_stream)
 
-# 再生
-play_obj = wave_obj.play()
-play_obj.wait_done()  # 再生が完了するまで待機
+    # 再生
+    play_obj = wave_obj.play()
+    play_obj.wait_done()  # 再生が完了するまで待機
+
 
 # from pprint import pprint
 # pprint(METAS)
