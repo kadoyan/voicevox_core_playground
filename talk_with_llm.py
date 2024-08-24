@@ -3,6 +3,7 @@ from pathlib import Path
 from voicevox_core import VoicevoxCore
 import simpleaudio as sa
 import io
+import json
 
 # コアファイルの設定
 open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11")
@@ -21,7 +22,15 @@ client = OpenAI(
 
 MODEL = "ELYZA-JP-8B:latest"
 
-messages = []
+# 保存するファイル名
+history_file = "conversation_history.json"
+
+# 履歴の読み込み
+if Path(history_file).exists():
+    with open(history_file, 'r') as file:
+        messages = json.load(file)
+else:
+    messages = []
 
 while True:
     role = "user"
@@ -38,7 +47,7 @@ while True:
     
     # LLMの応答を履歴に追加
     llm_response = response.choices[0].message.content
-    messages.append({"role": "assistant", "content": llm_response})
+    messages.append({"role": role, "content": llm_response})
     
     wave_bytes = core.tts(llm_response, speaker_id)
 
@@ -47,6 +56,10 @@ while True:
     # バイトストリームを再生可能なオブジェクトに変換
     wave_obj = sa.WaveObject.from_wave_file(audio_stream)
 
+    # 履歴の保存
+    with open(history_file, 'w') as file:
+        json.dump(messages, file, ensure_ascii=False, indent=4)
+    
     # 再生
     print(llm_response)
     play_obj = wave_obj.play()
