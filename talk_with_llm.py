@@ -5,7 +5,8 @@ import simpleaudio as sa
 import io
 
 # コアファイルの設定
-core = VoicevoxCore(open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11"))
+open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11")
+core = VoicevoxCore(open_jtalk_dict_dir=open_jtalk_dict_dir)
 
 # ずんだもんの声ID
 speaker_id = 3
@@ -18,23 +19,28 @@ client = OpenAI(
     api_key='ollama', # required, but unused
 )
 
-MODEL = "llama3.1:latest"
+MODEL = "ELYZA-JP-8B:latest"
+
+messages = []
 
 while True:
     role = "user"
     message = input("?")
     
+    # ユーザーのメッセージを履歴に追加
+    messages.append({"role": role, "content": message})
+    
+    # LLMへのリクエスト
     response = client.chat.completions.create(
         model = MODEL,
-        messages = [
-            {
-                "role": role,
-                "content": message
-            }
-        ]
+        messages = messages  # 全履歴を送信
     )
-    speech_script = response.choices[0].message.content
-    wave_bytes = core.tts(speech_script, speaker_id)
+    
+    # LLMの応答を履歴に追加
+    llm_response = response.choices[0].message.content
+    messages.append({"role": "assistant", "content": llm_response})
+    
+    wave_bytes = core.tts(llm_response, speaker_id)
 
     # バイナリーデータをバイトストリームとして読み込む
     audio_stream = io.BytesIO(wave_bytes)
@@ -42,5 +48,6 @@ while True:
     wave_obj = sa.WaveObject.from_wave_file(audio_stream)
 
     # 再生
+    print(llm_response)
     play_obj = wave_obj.play()
     play_obj.wait_done()  # 再生が完了するまで待機
