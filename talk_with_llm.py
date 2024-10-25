@@ -25,7 +25,8 @@ client = OpenAI(
     api_key='ollama',
 )
 
-MODEL = "ELYZA-JP-8B:latest"
+# MODEL = "ELYZA-JP-8B:latest"
+MODEL = "dsasai/llama3-elyza-jp-8b:latest"
 
 # 保存するファイル名
 history_file = "conversation_history.json"
