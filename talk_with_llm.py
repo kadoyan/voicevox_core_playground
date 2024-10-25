@@ -5,6 +5,10 @@ import simpleaudio as sa
 import io
 import json
 
+talk = True
+TALK_ON = "talk on"
+TALK_OFF = "talk off"
+
 # コアファイルの設定
 open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11")
 core = VoicevoxCore(open_jtalk_dict_dir=open_jtalk_dict_dir)
@@ -45,22 +49,32 @@ while True:
         messages = messages  # 全履歴を送信
     )
     
-    # LLMの応答を履歴に追加
-    llm_response = response.choices[0].message.content
-    messages.append({"role": role, "content": llm_response})
+    # LLMとのやりとり
+    if message not in (TALK_OFF, TALK_ON):
+        llm_response = response.choices[0].message.content
+        messages.append({"role": "assistant", "content": llm_response})
     
-    wave_bytes = core.tts(llm_response, speaker_id)
+        if talk:
+            wave_bytes = core.tts(llm_response, speaker_id)
 
-    # バイナリーデータをバイトストリームとして読み込む
-    audio_stream = io.BytesIO(wave_bytes)
-    # バイトストリームを再生可能なオブジェクトに変換
-    wave_obj = sa.WaveObject.from_wave_file(audio_stream)
-
-    # 履歴の保存
-    with open(history_file, 'w') as file:
-        json.dump(messages, file, ensure_ascii=False, indent=4)
-    
-    # 再生
-    print(llm_response)
-    play_obj = wave_obj.play()
-    play_obj.wait_done()  # 再生が完了するまで待機
+            # バイナリーデータをバイトストリームとして読み込む
+            audio_stream = io.BytesIO(wave_bytes)
+            # バイトストリームを再生可能なオブジェクトに変換
+            wave_obj = sa.WaveObject.from_wave_file(audio_stream)
+            
+            # 再生
+            play_obj = wave_obj.play()
+            # play_obj.wait_done()  # 再生が完了するまで待機
+        
+        # 履歴の保存
+        with open(history_file, 'w') as file:
+            json.dump(messages, file, ensure_ascii=False, indent=4)
+        
+        #レスポンスを文字で表示
+        print(llm_response)
+    else:
+        if message == TALK_OFF:
+            talk = False
+            
+        if message == TALK_ON:
+            talk = True
