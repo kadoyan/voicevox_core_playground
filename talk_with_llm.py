@@ -4,6 +4,7 @@ from voicevox_core import VoicevoxCore
 import simpleaudio as sa
 import io
 import json
+import wave
 
 talk = True
 TALK_ON = "talk on"
@@ -21,7 +22,7 @@ if not core.is_model_loaded(speaker_id):
 
 client = OpenAI(
     base_url = 'http://localhost:11434/v1',
-    api_key='ollama', # required, but unused
+    api_key='ollama',
 )
 
 MODEL = "ELYZA-JP-8B:latest"
@@ -39,6 +40,12 @@ else:
 while True:
     role = "user"
     message = input("?")
+
+    # トークモードの状態
+    if message.strip().lower() in (TALK_OFF.lower(), TALK_ON.lower()):
+        talk = message.strip().lower() == TALK_ON.lower()
+        print(f"トークモードは{'オン' if talk else 'オフ'}です")
+        continue # 次のループへ
     
     # ユーザーのメッセージを履歴に追加
     messages.append({"role": role, "content": message})
@@ -47,10 +54,10 @@ while True:
     response = client.chat.completions.create(
         model = MODEL,
         messages = messages  # 全履歴を送信
+        # messages=messages[-10:]  # 最新の10メッセージのみ送信
     )
     
-    # LLMとのやりとり
-    if message not in (TALK_OFF, TALK_ON):
+    if talk:
         llm_response = response.choices[0].message.content
         messages.append({"role": "assistant", "content": llm_response})
     
@@ -60,7 +67,8 @@ while True:
             # バイナリーデータをバイトストリームとして読み込む
             audio_stream = io.BytesIO(wave_bytes)
             # バイトストリームを再生可能なオブジェクトに変換
-            wave_obj = sa.WaveObject.from_wave_file(audio_stream)
+            wave_read = wave.open(audio_stream, 'rb')
+            wave_obj = sa.WaveObject.from_wave_read(wave_read)
             
             # 再生
             play_obj = wave_obj.play()
@@ -72,9 +80,3 @@ while True:
         
         #レスポンスを文字で表示
         print(llm_response)
-    else:
-        if message == TALK_OFF:
-            talk = False
-            
-        if message == TALK_ON:
-            talk = True
