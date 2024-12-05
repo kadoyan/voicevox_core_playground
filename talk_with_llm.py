@@ -9,6 +9,7 @@ import wave
 talk = True
 TALK_ON = "talk on"
 TALK_OFF = "talk off"
+SPEECH_SPEED = 1.5 #読み上げ速度
 
 # コアファイルの設定
 open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11")
@@ -62,7 +63,10 @@ while True:
         messages.append({"role": "assistant", "content": llm_response})
     
         if talk:
-            wave_bytes = core.tts(llm_response, speaker_id)
+            # wave_bytes = core.tts(llm_response, speaker_id)
+            audio_query = core.audio_query(llm_response, speaker_id)
+            audio_query.speed_scale = SPEECH_SPEED
+            wave_bytes = core.synthesis(audio_query, speaker_id)
 
             # バイナリーデータをバイトストリームとして読み込む
             audio_stream = io.BytesIO(wave_bytes)
