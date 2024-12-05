@@ -3,6 +3,8 @@ from voicevox_core import VoicevoxCore
 import simpleaudio as sa
 import io
 
+SPEECH_SPEED = 1.5 #読み上げ速度
+
 # コアファイルの設定
 core = VoicevoxCore(open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11"))
 
@@ -11,12 +13,13 @@ speaker_id = 3
 # モデルデータの読み込み
 if not core.is_model_loaded(speaker_id):
     core.load_model(speaker_id)
-
 while True:
     # 読み上げデータ
     speech_script = input("読んで欲しい文章を入力するのだ：\n")
     # 音声バイナリーデータ作成
-    wave_bytes = core.tts(speech_script, speaker_id)
+    audio_query = core.audio_query(speech_script, speaker_id)
+    audio_query.speed_scale = SPEECH_SPEED
+    wave_bytes = core.synthesis(audio_query, speaker_id)
 
     # バイナリーデータをバイトストリームとして読み込む
     audio_stream = io.BytesIO(wave_bytes)
