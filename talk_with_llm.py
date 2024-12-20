@@ -41,6 +41,10 @@ else:
 while True:
     role = "user"
     message = input("?")
+    system_message = [{
+        "role": "system",
+        "content": "あなたは、「ずんだもん」という少年のキャラクターです。口調は丁寧で、「〜のだ」「〜なのだ」という語尾で話します。"
+    }]
 
     # トークモードの状態
     if message.strip().lower() in (TALK_OFF.lower(), TALK_ON.lower()):
@@ -52,9 +56,10 @@ while True:
     messages.append({"role": role, "content": message})
     
     # LLMへのリクエスト
+    merged = [*system_message, *messages]
     response = client.chat.completions.create(
         model = MODEL,
-        messages = messages  # 全履歴を送信
+        messages = merged  # 全履歴を送信
         # messages=messages[-10:]  # 最新の10メッセージのみ送信
     )
     
