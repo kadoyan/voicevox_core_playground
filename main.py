@@ -29,7 +29,7 @@ class resetRequest(BaseModel):
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173"
+    "http://localhost:5174"
 ]
 
 # Cross-Origin Resource Sharingを許可
