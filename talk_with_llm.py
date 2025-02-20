@@ -9,7 +9,7 @@ import wave
 talk = True
 TALK_ON = "talk on"
 TALK_OFF = "talk off"
-SPEECH_SPEED = 1.5 #読み上げ速度
+SPEECH_SPEED = 1.3 #読み上げ速度
 
 # コアファイルの設定
 open_jtalk_dict_dir=Path("open_jtalk_dic_utf_8-1.11")
